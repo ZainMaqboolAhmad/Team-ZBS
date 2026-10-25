@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Quiz · Lecture 1</title>
+<style>
+:root{--bg1:#4f46e5;--bg2:#7c3aed;--card:#fff;--tx:#1b1f2a;--mut:#667085;--bd:#e4e7ec;--ok:#16a34a;--bad:#dc2626;--pri:#4f46e5}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,sans-serif;color:var(--tx);
+ background:linear-gradient(135deg,var(--bg1),var(--bg2));padding:16px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:640px}
+.top{color:#fff;text-align:center;margin:8px 0 14px}
+.top h1{margin:0;font-size:22px}
+.top p{margin:4px 0 0;opacity:.85;font-size:14px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);margin-bottom:14px}
+.hide{display:none}
+input[type=text]{width:100%;padding:13px;border:2px solid var(--bd);border-radius:10px;font-size:16px;margin:10px 0}
+input[type=text]:focus{outline:0;border-color:var(--pri)}
+button.main{width:100%;background:var(--pri);color:#fff;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:600;cursor:pointer}
+button.main:active{transform:scale(.98)}
+.info{color:var(--mut);font-size:14px;line-height:1.6;margin:6px 0 4px}
+.warn{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px;font-size:14px;margin:8px 0}
+.att{display:inline-block;background:#eef0ff;color:var(--pri);font-weight:700;border-radius:99px;padding:5px 12px;font-size:14px;margin:6px 0}
+.prog{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:6px}
+.bar{height:8px;background:var(--bd);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.fill{height:100%;background:linear-gradient(90deg,var(--bg1),var(--bg2));width:0;transition:width .3s}
+.q{font-size:18px;font-weight:650;line-height:1.45;margin-bottom:14px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:#fff;border:2px solid var(--bd);
+ border-radius:12px;padding:13px;margin:9px 0;font-size:15.5px;cursor:pointer;color:var(--tx);transition:.15s}
+.opt:hover{border-color:var(--pri)}
+.opt b{flex:none;width:28px;height:28px;border-radius:50%;background:#eef0ff;color:var(--pri);display:grid;place-items:center;font-size:13px}
+.opt.sel{border-color:var(--pri);background:#eef0ff}
+.opt.sel b{background:var(--pri);color:#fff}
+.opt:disabled{cursor:default}
+.res{text-align:center}
+.res .big{font-size:52px;font-weight:800;color:var(--pri);margin:4px 0}
+.res .nm{font-size:18px;font-weight:600}
+.status{display:inline-block;font-size:20px;font-weight:800;border-radius:99px;padding:6px 18px;margin:2px 0 6px}
+.status.pass{background:rgba(22,163,74,.14);color:var(--ok)}
+.status.fail{background:rgba(220,38,38,.12);color:var(--bad)}
+.res .msg{color:var(--mut);margin:4px 0 10px}
+.stats{display:flex;gap:10px;margin:12px 0}
+.stats div{flex:1;border-radius:12px;padding:10px;font-weight:700;font-size:15px}
+.stats .g{background:rgba(22,163,74,.12);color:var(--ok)}
+.stats .r{background:rgba(220,38,38,.12);color:var(--bad)}
+.ss{background:#fff7e6;border:2px dashed #f59e0b;color:#92400e;border-radius:12px;padding:12px;font-weight:700;font-size:15px;margin-top:10px;text-align:center}
+.rv{border-left:5px solid var(--ok);padding:10px 12px;background:#f8fafc;border-radius:8px;margin:10px 0;font-size:14.5px}
+.rv.x{border-left-color:var(--bad)}
+.rv .t{font-weight:650;margin-bottom:6px}
+.rv .a{margin:3px 0}
+.rv .ok{color:var(--ok);font-weight:600}
+.rv .no{color:var(--bad);font-weight:600}
+h2{margin:0 0 4px;font-size:18px}
+textarea{width:100%;min-height:260px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.5;padding:12px;border:2px solid var(--bd);border-radius:10px;resize:vertical;tab-size:4;margin-bottom:12px;color:var(--tx);background:#fff}
+textarea:focus{outline:0;border-color:var(--pri)}
+.proj{border-left:5px solid var(--pri);background:#f8fafc;border-radius:8px;padding:10px 12px;margin:10px 0}
+.proj pre{background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;overflow:auto;font-size:13px;white-space:pre-wrap;text-align:left;margin:8px 0 0}
+.cstat{font-size:13px;color:var(--mut);margin:0 0 10px}
+.rtw{overflow-x:auto;margin:10px 0}
+table.rt{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.rt th,.rt td{border:1px solid var(--bd);padding:7px 8px;vertical-align:top;word-break:break-word}
+.rt th{background:#f1f3f9;white-space:nowrap}
+.rt td.st{text-align:center;white-space:nowrap}
+.rt tr.r-bad{background:#fff5f5}.rt tr.r-warn{background:#fffaf0}
+.cv{font-weight:800;font-size:16px;border-radius:10px;padding:10px 12px;margin:10px 0;line-height:1.4}
+.cv.cv-ok{background:rgba(22,163,74,.12);color:var(--ok)}.cv.cv-bad{background:rgba(220,38,38,.1);color:var(--bad)}.cv.cv-warn{background:#fff7e6;color:#92400e}
+.codebox{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:8px 0;overflow:auto;font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;margin:8px 0}
+.cl{display:flex;white-space:pre-wrap;overflow-wrap:anywhere;padding:0 10px}
+.cl .n{flex:none;width:30px;color:#94a3b8;text-align:right;margin-right:10px;user-select:none}
+.cl.err{background:rgba(220,38,38,.35)}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:9;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>🐍 Python Quiz</h1><p>Lecture 1 · Introduction to Programming and Python</p></div>
+
+  <div class="card" id="start">
+    <h2>Start karne se pehle</h2>
+    <div class="warn hide" id="leftWarn"></div>
+    <p class="info">Har dafa <b>20 naye MCQs</b> aayenge (random). Har sawal ka sirf <b>ek dafa</b> jawab de sakte hain. Aap ke paas total <b>3 attempts</b> hain.</p>
+    <p class="info"><b>Dhyan rahe:</b> agar quiz beech mein chhor kar bahar aa gaye ya page band/refresh kiya, to wo <b>ek attempt</b> gina jayega. Isi tarah <b>tab ya window badalne</b> par bhi quiz band ho jayega aur attempt gina jayega.</p>
+    <p class="info">MCQs ke baad aakhir mein <b>Python Calculator</b> ka code <b>khud likhna</b> hoga. Copy-paste allowed nahi.</p>
+    <p class="info"><b>Pass hone ke liye</b> 20 mein se kam az kam <b>12 sahi</b> jawab chahiye.</p>
+    <div class="att" id="attLeft"></div>
+    <input type="text" id="name" placeholder="Apna naam likhein" maxlength="40">
+    <button class="main" id="go">Quiz Shuru Karein</button>
+  </div>
+
+  <div class="card hide" id="locked">
+    <h2>🔒 Aap ke 3 attempts khatam ho gaye</h2>
+    <p class="info" id="lockInfo"></p>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+
+  <div class="card hide" id="play">
+    <div class="prog"><span id="pn">Question 1 of 20</span><span id="pa"></span></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="q" id="qt"></div>
+    <div id="opts"></div>
+  </div>
+
+  <div class="card hide" id="code">
+    <h2>🧮 Aakhri Task: Python Calculator</h2>
+    <p class="info">Python par apna <b>Calculator</b> banayein. Pehle upar <b>title</b> likhein, phir neeche <b>Python code khud likhein</b>. Copy-paste allowed nahi hai. Is page par bhi tab ya window switch na karein. Jama karne par aap ke code ki <b>automatic checking</b> hogi aur ghaltiyan <b>line number ke saath</b> bataayi jayengi.</p>
+    <input type="text" id="ctitle" placeholder="Title (jaise: Simple Calculator in Python)" maxlength="80" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <textarea id="ccode" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="# Yahan apna Python code likhein..."></textarea>
+    <div class="cstat" id="cstat"></div>
+    <button class="main" id="csub">Jama Karein aur Result Dekhein</button>
+  </div>
+
+  <div class="card hide res" id="result">
+    <div class="nm" id="rn"></div>
+    <div class="big" id="rs"></div>
+    <div class="status" id="rst"></div>
+    <div class="msg" id="rm"></div>
+    <div class="stats"><div class="g" id="rc"></div><div class="r" id="rw"></div></div>
+    <div class="info" id="rd"></div>
+    <div class="info" id="rpt"></div>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+
+  <div class="card hide" id="creport">
+    <h2>📋 Final Code Report</h2>
+    <div class="info" id="crmeta"></div>
+    <div class="info"><b id="crtitle"></b></div>
+    <div class="cv" id="crverdict"></div>
+    <div class="rtw"><table class="rt"><thead><tr><th>Check</th><th>Natija</th><th>Detail / Hal</th></tr></thead><tbody id="crbody"></tbody></table></div>
+    <div class="info"><b>Aap ka code</b> (laal lines mein masla hai):</div>
+    <div class="codebox" id="crcode"></div>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+
+  <div class="card hide" id="review"><h2>Aap ke jawabat ka jaiza</h2><div id="rvlist"></div>
+    <button class="main" id="again" style="margin-top:12px">Agla Attempt Dein</button>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+// Question bank (PDF ke alfaz mein). Har attempt mein 20 random aate hain.
+const BANK=[
+["What is a program?", ["A set of instructions that tells a computer what to do", "A mistake in the code", "A tool for writing code", "A step-by-step method for solving a problem"], 0],
+["Every program follows which basic pattern?", ["Input → Process → Output", "Save → Load → Run", "Write → Test → Fix", "Read → Print → Stop"], 0],
+["What is an algorithm?", ["A clear, step-by-step method for solving a problem", "The text of a program", "A mistake in a program", "The grammar rules of a language"], 0],
+["What is syntax?", ["The grammar rules of a language", "A mistake in a program", "A tool for writing code", "The process of fixing bugs"], 0],
+["What is a bug?", ["A mistake in a program that causes wrong or unexpected behaviour", "A tool for writing code", "A set of instructions", "The grammar rules of a language"], 0],
+["What is debugging?", ["The process of finding and fixing bugs", "Writing source code", "Installing Python", "Running a program"], 0],
+["What is source code?", ["The text of a program, written by a human in a programming language", "Binary instructions for the CPU", "The result of a program", "A type of computer"], 0],
+["Which part of the computer executes instructions?", ["CPU", "RAM", "Storage", "Printer"], 0],
+["What is RAM?", ["Fast, temporary memory for running programs", "Permanent space for files and installed programs", "The part that executes instructions", "The part that presents results to the user"], 0],
+["Which is permanent: RAM or storage?", ["Storage", "RAM", "CPU", "Both are temporary"], 0],
+["What is a program's journey?", ["Saved in storage, loaded into RAM, run by the CPU", "Saved in RAM, loaded into storage, run by the CPU", "Saved in the CPU, loaded into RAM, run by storage", "Saved in storage, loaded into the CPU, run by RAM"], 0],
+["A CPU understands only one language. Which one?", ["Machine code", "Python", "Assembly", "Java"], 0],
+["Python is which type of language?", ["High-level language", "Machine code", "Assembly language", "Binary language"], 0],
+["Which translator translates the whole program before it runs?", ["Compiler", "Interpreter", "Editor", "Terminal"], 0],
+["What does an interpreter do?", ["Reads and runs the program line by line", "Translates the whole program first", "Creates an executable file", "Writes pseudocode"], 0],
+["Which pair of languages is compiled?", ["C and C++", "Python and Ruby", "Python and PHP", "Ruby and PHP"], 0],
+["When you run python hello.py, Python first compiles your source code into what?", ["Bytecode", "Machine code", "Pseudocode", "A flowchart"], 0],
+["What executes the bytecode in Python?", ["The Python Virtual Machine (PVM)", "The compiler", "The editor", "The terminal"], 0],
+["In an algorithm, what does 'Finite' mean?", ["It ends after a limited number of steps", "Every step is precise and unambiguous", "It takes zero or more inputs", "It produces at least one result"], 0],
+["What is pseudocode best for?", ["Planning the logic before coding", "Seeing decisions and loops at a glance", "Running the program", "Installing Python"], 0],
+["In a flowchart, what is the Decision symbol used for?", ["A yes/no question that splits the path", "The Start and End of the algorithm", "Reading data in", "A calculation or an action"], 0],
+["Who created Python?", ["Guido van Rossum", "Tim Peters", "Dennis Ritchie", "Monty Python"], 0],
+["In which year was Python first released?", ["1991", "1981", "2001", "2020"], 0],
+["Python is named after what?", ["The British comedy group Monty Python", "The snake", "A Greek god", "Its creator"], 0],
+["What does 'dynamically typed' mean?", ["You do not declare variable types; Python works them out for you", "You must declare every variable type", "Variables cannot change", "Python has no variables"], 0],
+["Python 2 reached end of life in which year?", ["2020", "2010", "2015", "2024"], 0],
+["Which command checks the Python version on Windows?", ["python --version", "python3 --version", "py check", "version python"], 0],
+["Which mode shows results immediately after each line and does not save your code?", ["REPL (interactive mode)", "Script (a .py file)", "Compiler", "Bytecode"], 0],
+["What is the output of print(\"Python\", \"is\", \"fun\", sep=\"-\")?", ["Python-is-fun", "Python is fun", "Python,is,fun", "Python-is-fun-"], 0],
+["What does \\n do inside a string?", ["Starts a new line", "Adds a space", "Ends the program", "Adds a comment"], 0],
+["A comment in Python starts with which symbol?", ["#", "//", "/*", "--"], 0],
+["What type of value does input() always return?", ["A string (str)", "An int", "A float", "A bool"], 0],
+["Which is a valid variable name?", ["first_name", "2age", "first name", "for"], 0],
+["What does type(3.14) show?", ["<class 'float'>", "<class 'int'>", "<class 'str'>", "<class 'bool'>"], 0],
+["Which error type does Python never report on its own?", ["Logic error", "Syntax error", "Runtime error", "Traceback"], 0],
+["When is a syntax error detected?", ["Before the program starts", "While the program runs", "Never", "After the output"], 0],
+["Using an undefined name or dividing by zero causes which error?", ["Runtime error", "Syntax error", "Logic error", "No error"], 0],
+["What does average = 10 + 20 / 2 print as the average?", ["20.0", "15.0", "30.0", "25.0"], 0],
+["When reading a traceback, where should you start?", ["At the last line", "At the first line", "In the middle", "You should ignore it"], 0],
+["What is PEP 8?", ["Python's style guide", "A Python editor", "A type of error", "A Python library"], 0]
+];
+
+const TOTAL=20, MAX=3, PASS=12;
+// Fail hone walon ke liye line (yahan se badal sakte hain)
+const ROAST="Ghar ke paani mein doobo ge ya CR paani parcel karwaye? 😂";
+const $=id=>document.getElementById(id);
+function get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
+function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+// OWNER RESET: testing ke baad attempts wapis karne ke liye link ke aakhir mein #admin-reset-7391 lagayen
+if(location.hash==="#admin-reset-7391"){
+  ["pq_used","pq_scores","pq_live","pq_name"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  history.replaceState(null,"",location.pathname+location.search);
+}
+let used=get("pq_used",0), scores=get("pq_scores",[]), set=[], cur=0, ans=[], player=get("pq_name",""), busy=false;
+
+let active=false, projTitle="", projCode="", codeReport=null;
+// Agar pichli dafa quiz beech mein chhora gaya tha (attempt pehle hi gina ja chuka hai)
+if(get("pq_live",false)){
+  put("pq_live",false);
+  $("leftWarn").textContent="⚠️ Pichli dafa aap ne quiz beech mein chhor diya tha, is liye wo ek attempt gina gaya.";
+  $("leftWarn").classList.remove("hide");
+}
+$("name").value=player;
+home();
+
+function home(){
+  $("play").classList.add("hide");$("code").classList.add("hide");$("result").classList.add("hide");$("review").classList.add("hide");$("creport").classList.add("hide");
+  if(used>=MAX){
+    $("start").classList.add("hide");$("locked").classList.remove("hide");
+    $("lockInfo").textContent=(player?player+", ":"")+"aap ne tino attempts use kar liye hain. "+
+      (scores.length?"Aap ke scores: "+scores.map((s,i)=>"Attempt "+(i+1)+": "+s).join(" · ")+".":"");
+  }else{
+    $("locked").classList.add("hide");$("start").classList.remove("hide");
+    $("attLeft").textContent="Attempts bache hain: "+(MAX-used)+" / "+MAX;
+  }
+}
+
+$("go").onclick=()=>{
+  player=$("name").value.trim();
+  if(!player){$("name").focus();$("name").style.borderColor="#dc2626";return}
+  put("pq_name",player);
+  // Attempt usi waqt gina jata hai jab quiz shuru ho
+  used++;put("pq_used",used);put("pq_live",true);
+  loadPy();
+  // 40 mein se 20 random sawal, aur options bhi random order mein
+  set=shuffle(BANK).slice(0,TOTAL).map(q=>{
+    const idx=shuffle([0,1,2,3]);
+    return {q:q[0],opts:idx.map(i=>q[1][i]),ans:idx.indexOf(q[2])};
+  });
+  cur=0;ans=[];active=true;
+  $("leftWarn").classList.add("hide");
+  $("start").classList.add("hide");$("play").classList.remove("hide");
+  $("pa").textContent="Attempt "+used+" of "+MAX;
+  show();
+};
+
+function show(){
+  busy=false;
+  const q=set[cur];
+  $("pn").textContent="Question "+(cur+1)+" of "+TOTAL;
+  $("fill").style.width=(cur/TOTAL*100)+"%";
+  $("qt").textContent=(cur+1)+". "+q.q;
+  const box=$("opts");box.innerHTML="";
+  q.opts.forEach((o,j)=>{
+    const b=document.createElement("button");b.className="opt";
+    const l=document.createElement("b");l.textContent="ABCD"[j];
+    const s=document.createElement("span");s.textContent=o;
+    b.append(l,s);b.onclick=()=>pick(j,b);box.appendChild(b);
+  });
+}
+
+function pick(j,btn){
+  if(busy)return;busy=true;
+  ans[cur]=j;
+  document.querySelectorAll("#opts .opt").forEach(x=>x.disabled=true);
+  btn.classList.add("sel");
+  setTimeout(()=>{if(!active)return;cur++;cur<TOTAL?show():toCode()},450);
+}
+
+function finish(){
+  active=false;put("pq_live",false);
+  $("code").classList.add("hide");
+  $("fill").style.width="100%";
+  $("play").classList.add("hide");
+  let sc=0;set.forEach((q,i)=>{if(ans[i]===q.ans)sc++});
+  scores.push(sc+"/"+TOTAL);put("pq_scores",scores);
+  const pct=Math.round(sc/TOTAL*100);
+  $("rn").textContent=player+" · Attempt "+used+" of "+MAX;
+  $("rs").textContent=sc+" / "+TOTAL;
+  const pass=sc>=PASS;
+  $("rst").textContent=pass?"✅ PASS":"❌ FAIL";
+  $("rst").className="status "+(pass?"pass":"fail");
+  $("rm").textContent=pct+"% · "+(pass?"Mubarak ho! Aap pass ho gaye 🎉":ROAST+" (Pass hone ke liye kam az kam "+PASS+" sahi chahiye)");
+  $("rc").textContent="✅ Sahi: "+sc;
+  $("rw").textContent="❌ Ghalat: "+(TOTAL-sc);
+  $("rd").textContent=new Date().toLocaleString();
+  $("rpt").textContent="🧮 Project: "+projTitle;
+  $("result").classList.remove("hide");
+  renderCodeReport(sc,pass);
+
+  const list=$("rvlist");list.innerHTML="";
+  set.forEach((q,i)=>{
+    const ok=ans[i]===q.ans;
+    const d=document.createElement("div");d.className="rv"+(ok?"":" x");
+    const t=document.createElement("div");t.className="t";t.textContent=(ok?"✅ ":"❌ ")+(i+1)+". "+q.q;
+    const a=document.createElement("div");a.className="a "+(ok?"ok":"no");
+    a.textContent="Aap ka jawab: "+"ABCD"[ans[i]]+") "+q.opts[ans[i]];
+    d.append(t,a);
+    if(!ok){
+      const c=document.createElement("div");c.className="a ok";
+      c.textContent="Sahi jawab: "+"ABCD"[q.ans]+") "+q.opts[q.ans];
+      d.appendChild(c);
+    }
+    list.appendChild(d);
+  });
+  $("again").textContent=used>=MAX?"Aap ke attempts khatam ho gaye":"Agla Attempt Dein ("+(MAX-used)+" bache)";
+  $("again").disabled=used>=MAX;
+  $("again").style.opacity=used>=MAX?".5":"1";
+  $("review").classList.remove("hide");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("again").onclick=()=>{if(used<MAX){home();window.scrollTo(0,0)}};
+
+// ---------- Coding page ----------
+let toastT;
+function toast(m){const t=$("toast");t.textContent=m||"Paste allowed nahi hai, khud likhein ✍️";t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2200)}
+function toCode(){
+  $("play").classList.add("hide");
+  $("ctitle").value="";$("ccode").value="";$("ctitle")._p="";$("ccode")._p="";
+  $("code").classList.remove("hide");window.scrollTo(0,0);
+}
+function guard(el){
+  el._p=el.value||"";
+  ["paste","drop","dragover","contextmenu"].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();toast()}));
+  el.addEventListener("keydown",e=>{
+    const k=(e.key||"").toLowerCase();
+    if(((e.ctrlKey||e.metaKey)&&k==="v")||(e.shiftKey&&k==="insert")){e.preventDefault();toast()}
+    if(k==="tab"&&el.tagName==="TEXTAREA"){e.preventDefault();el.setRangeText("    ",el.selectionStart,el.selectionEnd,"end");el._p=el.value}
+  });
+  el.addEventListener("beforeinput",e=>{if(/^insertFrom(Paste|Drop|Yank)/.test(e.inputType||"")){e.preventDefault();toast()}});
+  // Agar ek hi baar mein bohat saara text aa jaye (keyboard ke clipboard suggestion se), wapis hata do
+  el.addEventListener("input",()=>{if(el.value.length-el._p.length>20){el.value=el._p;toast()}else el._p=el.value});
+}
+guard($("ctitle"));guard($("ccode"));
+$("csub").onclick=async()=>{
+  const t=$("ctitle").value.trim(), c=$("ccode").value;
+  if(!t){toast("Pehle title likhein");$("ctitle").focus();return}
+  if(c.trim().length<20){toast("Pehle apna Python code likhein");$("ccode").focus();return}
+  projTitle=t;projCode=c;
+  const b=$("csub");b.disabled=true;b.textContent="⏳ Code check ho raha hai...";
+  try{codeReport=await analyzeCode(c)}catch(e){codeReport=null}
+  b.disabled=false;b.textContent="Jama Karein aur Result Dekhein";
+  if(!active)return; // check ke dauran tab/window badla to quiz pehle hi band ho chuka hai
+  finish();
+};
+
+// ---------- Code checker (reference calculator ke mutabiq) ----------
+const PYV="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js";
+// Yeh Python code browser ke andar (Pyodide) chalta hai: student ka code compile karta hai aur 6 test cases chalata hai.
+const HARNESS=String.raw`
+import sys, io, re, json, builtins, traceback
+
+class _StepLimit(BaseException):
+    pass
+
+_CASES = [
+    ("add", "1", "12", "5", 17.0),
+    ("sub", "2", "12", "5", 7.0),
+    ("mul", "3", "12", "5", 60.0),
+    ("div", "4", "12", "5", 2.4),
+    ("zero", "4", "12", "0", None),
+    ("bad", "9", "12", "5", None),
+]
+
+def _run_case(code_obj, op, a, b):
+    out = io.StringIO()
+    st = {"nums": 0, "ops": 0, "seq": 0}
+    seq = [op, a, b]
+    def fake_input(prompt=""):
+        p = str(prompt).lower()
+        if re.search(r"again|continue|another|y/n|yes|repeat", p):
+            return "no"
+        if re.search(r"number|num|first|second|1st|2nd|value|operand", p):
+            if st["nums"] >= 2:
+                raise EOFError("input khatam")
+            v = (a, b)[st["nums"]]
+            st["nums"] += 1
+            return v
+        if re.search(r"operation|option|choice|select|choose|operator|menu|\bop\b", p):
+            if st["ops"] >= 1:
+                raise EOFError("input khatam")
+            st["ops"] += 1
+            return op
+        if st["seq"] >= 3:
+            raise EOFError("input khatam")
+        v = seq[st["seq"]]
+        st["seq"] += 1
+        return v
+    bi = dict(vars(builtins))
+    bi["input"] = fake_input
+    g = {"__name__": "__main__", "__builtins__": bi}
+    steps = [0]
+    def tracer(frame, event, arg):
+        if frame.f_code.co_filename != "<student>":
+            return None
+        if event == "line":
+            steps[0] += 1
+            if steps[0] > 150000:
+                raise _StepLimit()
+        return tracer
+    err = None
+    eof = False
+    old = sys.stdout
+    sys.stdout = out
+    sys.settrace(tracer)
+    try:
+        exec(code_obj, g)
+    except EOFError:
+        eof = True
+    except _StepLimit:
+        err = {"type": "StepLimit", "msg": "", "line": None}
+    except SystemExit:
+        pass
+    except BaseException as e:
+        ln = None
+        for fr in traceback.extract_tb(e.__traceback__):
+            if fr.filename == "<student>":
+                ln = fr.lineno
+        err = {"type": type(e).__name__, "msg": str(e), "line": ln}
+    finally:
+        sys.settrace(None)
+        sys.stdout = old
+    return out.getvalue(), err, eof
+
+def run_checks(code):
+    res = {"syntax": None, "cases": []}
+    try:
+        code_obj = compile(code, "<student>", "exec")
+    except SyntaxError as e:
+        res["syntax"] = {"type": type(e).__name__, "msg": e.msg or str(e), "line": e.lineno}
+        return json.dumps(res)
+    except Exception as e:
+        res["syntax"] = {"type": type(e).__name__, "msg": str(e), "line": None}
+        return json.dumps(res)
+    base = set()
+    for cid, op, a, b, exp in _CASES:
+        out, err, eof = _run_case(code_obj, op, a, b)
+        lines = [l.strip() for l in out.splitlines() if l.strip()]
+        if cid == "add":
+            base = set(lines)
+        ok = False
+        if err is None:
+            new = [l for l in lines if l not in base]
+            if exp is not None:
+                nums = [float(x) for x in re.findall(r"-?\d+(?:\.\d+)?", out)]
+                ok = any(abs(x - exp) < 1e-9 for x in nums)
+            elif cid == "zero":
+                ok = bool(new) and not re.search(r"\b(inf|nan)\b", out.lower())
+            else:
+                ok = bool(new)
+        res["cases"].append({"id": cid, "ok": ok, "err": err, "eof": eof,
+                             "empty": not lines, "tail": (lines[-1][:80] if lines else "")})
+    return json.dumps(res)
+`;
+
+let pyP=null;
+function loadPy(){
+  if(pyP)return pyP;
+  pyP=new Promise((res,rej)=>{
+    const s=document.createElement("script");s.src=PYV;
+    s.onload=async()=>{try{const py=await loadPyodide();py.runPython(HARNESS);res(py)}catch(e){rej(e)}};
+    s.onerror=()=>rej(new Error("pyodide load fail"));
+    document.head.appendChild(s);
+  });
+  $("cstat").textContent="⏳ Code checker tayyar ho raha hai...";
+  pyP.then(()=>{$("cstat").textContent="✅ Code checker tayyar hai"},
+           ()=>{$("cstat").textContent="⚠️ Python engine load nahi hua (internet?). Sirf basic check hoga."});
+  return pyP;
+}
+
+function indentOf(s){let n=0;for(const ch of s){if(ch===" ")n++;else if(ch==="\t")n+=4;else break}return n}
+function lev1(a,b){ // edit distance <=1 (ya do huroof ki adla-badli)
+  if(a===b)return true;if(Math.abs(a.length-b.length)>1)return false;
+  let i=0;while(i<a.length&&i<b.length&&a[i]===b[i])i++;
+  if(a.length===b.length)return a.slice(i+1)===b.slice(i+1)||(a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2));
+  if(a.length>b.length)return a.slice(i+1)===b.slice(i);
+  return b.slice(i+1)===a.slice(i);
+}
+function hasSingleEq(s){
+  let d=0;
+  for(let k=0;k<s.length;k++){
+    const c=s[k];
+    if("([{".includes(c))d++;else if(")]}".includes(c))d--;
+    else if(c==="="&&d===0){
+      if(s[k+1]==="="){k++;continue}
+      if("=!<>:+-*/%".includes(s[k-1]||""))continue;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Line-by-line "grammar" check: har ghalti ke saath line number
+function lintCode(src){
+  const lines=src.replace(/\r\n?/g,"\n").split("\n");
+  const map=new Map();
+  const add=(ln,m,kind)=>{const a=map.get(ln)||[];if(!a.some(x=>x.m===m))a.push({m,kind});map.set(ln,a)};
+  const CLOSE={"(":")","[":"]","{":"}"}, OPEN={")":"(","]":"[","}":"{"};
+  const clean=[],cont=[];let tri=null;const stack=[];
+  const nextIdx=i=>{for(let k=i+1;k<lines.length;k++){const t=lines[k].trim();if(t&&t[0]!=="#")return k}return -1};
+  for(let i=0;i<lines.length;i++){
+    const L=lines[i],ln=i+1;cont.push(stack.length>0||tri!==null);
+    let out="",j=0;
+    while(j<L.length){
+      const c=L[j];
+      if(tri){if(L.startsWith(tri,j)){out+="   ";j+=3;tri=null}else{out+=" ";j++}continue}
+      if(c==="#")break;
+      if(c==='"'||c==="'"){
+        if(L.startsWith(c.repeat(3),j)){tri=c.repeat(3);out+="   ";j+=3;continue}
+        let k=j+1,closed=false;
+        while(k<L.length){if(L[k]==="\\"){k+=2;continue}if(L[k]===c){closed=true;break}k++}
+        if(!closed){add(ln,"string ka quote ("+c+") band nahi kiya","syntax");out+=" ".repeat(L.length-j);j=L.length;break}
+        out+=c+" ".repeat(k-j-1)+c;j=k+1;continue;
+      }
+      if("([{".includes(c)){stack.push({ch:c,line:ln,indent:indentOf(L)});out+=c;j++;continue}
+      if(")]}".includes(c)){
+        const top=stack[stack.length-1];
+        if(!top)add(ln,"extra bracket "+c+" hai (iska opening bracket nahi mila)","syntax");
+        else if(top.ch!==OPEN[c]){add(ln,"bracket match nahi karta: "+top.ch+" (line "+top.line+") ke saath "+c+" aaya","syntax");stack.pop()}
+        else stack.pop();
+        out+=c;j++;continue;
+      }
+      out+=c;j++;
+    }
+    clean.push(out);
+    if(stack.length&&tri===null){
+      const n=nextIdx(i);
+      if(n>=0){
+        const nt=lines[n].trim();
+        if(indentOf(lines[n])<=stack[0].indent&&!")]}".includes(nt[0])){
+          stack.forEach(s=>add(s.line,"bracket "+s.ch+" band nahi kiya (aakhir mein "+CLOSE[s.ch]+" chahiye)","syntax"));
+          stack.length=0;
+        }
+      }
+    }
+  }
+  if(tri)add(lines.length,"triple quote band nahi kiya","syntax");
+  stack.forEach(s=>add(s.line,"bracket "+s.ch+" band nahi kiya (aakhir mein "+CLOSE[s.ch]+" chahiye)","syntax"));
+
+  // colon, indent, ==, spelling
+  const hasInt=/\bint\s*\(/.test(clean.join("\n"));
+  const defd=new Set();clean.forEach(t=>{const m=t.match(/^\s*def\s+([A-Za-z_]\w*)/);if(m)defd.add(m[1])});
+  const CALLS=["print","input","float","int","str","calculator"];
+  const HEADS=["if","elif","else","for","while","def","try","except","finally","with","class"];
+  const indSt=[0];let expect=false,hdrInd=0;
+  for(let i=0;i<clean.length;i++){
+    if(cont[i])continue;
+    const t=clean[i].trim();if(!t)continue;
+    const ln=i+1,ind=indentOf(lines[i]);
+    if(expect){
+      if(ind<=hdrInd)add(ln,"upar wali line (colon wali) ke baad indent (4 spaces) chahiye","syntax");
+      else indSt.push(ind);
+      expect=false;
+    }else{
+      const top=indSt[indSt.length-1];
+      if(ind>top){add(ln,"faltu indent hai (upar wali line ke baad indent nahi hona chahiye)","syntax");indSt.push(ind)}
+      else if(ind<top){
+        while(indSt.length>1&&indSt[indSt.length-1]>ind)indSt.pop();
+        if(indSt[indSt.length-1]!==ind){add(ln,"indentation upar wali lines se match nahi karta","syntax");indSt.push(ind)}
+      }
+    }
+    const first=(t.match(/^[A-Za-z_]\w*/)||[""])[0];
+    const isHead=/^(if|elif|while|for|def|class|with|except)\b/.test(t)||/^(else|try|finally)\s*$/.test(t);
+    if(isHead&&!t.includes(":"))add(ln,"line ke aakhir mein colon (:) lagana bhool gaye","syntax");
+    if(t.endsWith(":")){expect=true;hdrInd=ind}
+    if(/^(if|elif|while)\b/.test(t)&&hasSingleEq(t.replace(/^(if|elif|while)\b/,"")))add(ln,"condition mein barabar check karne ke liye == likhein (= se value set hoti hai)","syntax");
+    if(first&&t.endsWith(":")&&!HEADS.includes(first)){
+      const hit=HEADS.find(h=>lev1(first,h)||lev1(first.toLowerCase(),h));
+      if(hit)add(ln,"'"+first+"' ki jagah '"+hit+"' hona chahiye","syntax");
+    }
+    const re=/([A-Za-z_]\w*)\s*\(/g;let m;
+    while((m=re.exec(t))){
+      const name=m[1];if(CALLS.includes(name)||defd.has(name)||t[m.index-1]===".")continue;
+      const hit=CALLS.find(c=>lev1(name,c)||lev1(name.toLowerCase(),c));
+      if(hit)add(ln,"'"+name+"' ki spelling ghalat lagti hai — shayad '"+hit+"' hona chahiye","hint");
+    }
+    if(!hasInt&&/^(if|elif)\b.*==\s*[1-4]\b/.test(t))add(ln,"input() hamesha string deta hai — option ko '1' (quotes mein) se compare karein, ya int(input(...)) use karein","hint");
+  }
+  return [...map.entries()].sort((a,b)=>a[0]-b[0]).map(([line,items])=>({line,items}));
+}
+
+function synUrdu(e){
+  const m=e.msg||"";let r;
+  if((r=m.match(/'(.)' was never closed/)))return "bracket "+r[1]+" band nahi kiya";
+  if(/unterminated string/.test(m))return "string ka quote band nahi kiya";
+  if((r=m.match(/unmatched '(.)'/)))return "extra bracket "+r[1]+" hai";
+  if(/expected ':'/.test(m))return "colon (:) lagana bhool gaye";
+  if(/expected an indented block/.test(m))return "colon wali line ke baad indent (4 spaces) chahiye";
+  if(/unexpected indent/.test(m))return "faltu indent hai";
+  if(/unindent does not match/.test(m))return "indentation upar wali lines se match nahi karta";
+  if(/Maybe you meant '=='|cannot assign/.test(m))return "barabar check karne ke liye == use karein, = nahi";
+  if(/invalid syntax/.test(m))return "syntax ghalat hai — spelling, quote, bracket ya colon check karein";
+  return e.type+": "+m;
+}
+function runUrdu(e){
+  const m=e.msg||"";
+  switch(e.type){
+    case "ZeroDivisionError":return "zero se divide ho gaya — division se pehle num2 == 0 ka check lagayein";
+    case "NameError":return "naam define nahi hai ("+m+") — spelling check karein";
+    case "ValueError":return "ghalat value: "+m;
+    case "TypeError":return "type ka masla: "+m;
+    case "StepLimit":return "program kabhi khatam nahi hota (infinite loop)";
+    default:return e.type+": "+m;
+  }
+}
+
+const CASE_INFO={
+  add:["Test: 12 + 5 (option 1)","17","+ (jama)"],
+  sub:["Test: 12 − 5 (option 2)","7","− (minus)"],
+  mul:["Test: 12 × 5 (option 3)","60","× (zarb)"],
+  div:["Test: 12 ÷ 5 (option 4)","2.4","÷ (taqseem)"],
+  zero:["Test: 12 ÷ 0 (zero se division)","",""],
+  bad:["Test: ghalat option (9)","",""]
+};
+
+function buildReport(code,lint,py){
+  const rows=[],errLines=new Set();
+  const R=(st,check,detail)=>rows.push({st,check,detail});
+  const noC=code.split("\n").map(l=>l.replace(/#.*$/,"")).join("\n");
+  const low=noC.toLowerCase();
+
+  // 1) Syntax (grammar)
+  const syn=[],hints=[];
+  lint.forEach(it=>it.items.forEach(x=>(x.kind==="syntax"?syn:hints).push({line:it.line,m:x.m})));
+  let synList=syn;
+  if(py){
+    if(py.syntax){
+      const ln=py.syntax.line;
+      if(!syn.some(s=>s.line===ln))syn.push({line:ln,m:synUrdu(py.syntax)+" [Python: "+py.syntax.msg+"]"});
+    }else synList=[];
+  }
+  const byLine=new Map();
+  synList.forEach(s=>{const k=s.line==null?0:s.line;byLine.set(k,(byLine.get(k)||[]).concat(s.m))});
+  [...byLine.entries()].sort((a,b)=>a[0]-b[0]).forEach(([ln,ms])=>{
+    if(ln)errLines.add(ln);
+    R("bad","Syntax · "+(ln?"Line "+ln:"Code"),ms.join(" · "));
+  });
+  if(!synList.length)R("ok","Syntax","Grammar ki koi ghalti nahi mili"+(py?"":" (basic check)"));
+  hints.forEach(h=>{errLines.add(h.line);R("warn","Spelling/Logic · Line "+h.line,h.m)});
+
+  // 2) Structure (reference code ke mutabiq)
+  const nInput=(noC.match(/\binput\s*\(/g)||[]).length;
+  const nFloat=(noC.match(/\bfloat\s*\(\s*input\s*\(/g)||[]).length;
+  const nIf=(noC.match(/^\s*if\b/gm)||[]).length, nElif=(noC.match(/^\s*elif\b/gm)||[]).length;
+  const hasElse=/^\s*else\s*:/m.test(noC);
+  R(/^\s*def\s+calculator\s*\(\s*\)\s*:/m.test(noC)?"ok":"bad","Structure · function","def calculator(): naam ki function"+(/^\s*def\s+calculator\s*\(\s*\)\s*:/m.test(noC)?" maujood hai":" nahi mili"));
+  const miss=[["Add","add|plus|\\bsum"],["Subtract","subtract|minus|\\bsub"],["Multiply","multipl|\\bmul"],["Divide","divi|\\bdiv"]].filter(([,re])=>!new RegExp(re).test(low)).map(x=>x[0]);
+  R(miss.length?"bad":"ok","Structure · menu",miss.length?"Menu mein yeh options nahi mile: "+miss.join(", "):"Add / Subtract / Multiply / Divide ka menu maujood hai");
+  if(nInput<3)R("bad","Structure · input","input() sirf "+nInput+" hain — operation aur 2 numbers ke liye 3 chahiye");
+  else if(nFloat<2)R("warn","Structure · input","Numbers ke liye float(input(...)) use karein taake decimal numbers bhi chalein");
+  else R("ok","Structure · input","Operation + 2 numbers (float(input(...))) sahi hain");
+  if(nIf+nElif<4)R("bad","Structure · if / elif","4 operations ke liye if + 3 elif chahiye (mile: "+(nIf+nElif)+")");
+  else if(!hasElse)R("bad","Structure · if / elif","Ghalat option ke liye aakhir mein else: nahi mila");
+  else R("ok","Structure · if / elif","4 operations ke branches aur else maujood hain");
+  const zc=/(==|!=)\s*0(\.0)?\b|zerodivisionerror|\bexcept\b/i.test(noC);
+  R(zc?"ok":"bad","Structure · zero check",zc?"Division mein zero ka check maujood hai":"Division ke liye zero ka check nahi mila (if num2 == 0)");
+  const called=/^[ \t]*calculator\s*\(\s*\)\s*$/m.test(noC);
+  R(called?"ok":"bad","Structure · function call",called?"calculator() call ho raha hai":"calculator() ko call nahi kiya — sirf def likhne se program nahi chalta");
+  const guard=/if\s+__name__\s*==\s*["']__main__["']\s*:/.test(noC);
+  R(guard?"ok":"warn","Structure · main guard",guard?'if __name__ == "__main__": maujood hai':'Reference code mein if __name__ == "__main__": hai — behtar practice hai (zaroori nahi)');
+
+  // 3) Live tests
+  if(!py)R("warn","Live tests","Python engine load nahi hua (internet?), is liye programs run nahi ho sake — sirf upar wale checks hue");
+  else if(py.syntax)R("skip","Live tests","Pehle upar wali syntax ghaltiyan theek karein, phir program test hoga");
+  else py.cases.forEach(c=>{
+    const [label,exp,opn]=CASE_INFO[c.id];
+    let st="ok",d;
+    if(c.err){st="bad";if(c.err.line)errLines.add(c.err.line);d=(c.err.line?"Line "+c.err.line+": ":"")+runUrdu(c.err)}
+    else if(c.empty){st="bad";d="Kuch print nahi hua — kya aap ne calculator() ko call kiya?"}
+    else if(!c.ok){
+      st="bad";
+      if(exp)d="Jawab "+exp+" hona chahiye tha lekin output mein nahi mila (aakhri line: \""+c.tail+"\"). Option ki condition aur "+opn+" ka formula check karein."+(c.id==="div"?" (// ki jagah / use karein)":"");
+      else if(c.id==="zero")d="Zero se divide par error ka message print hona chahiye (jaise: Error: Division by zero is not allowed)";
+      else d="Ghalat option par 'Invalid operation' jaisa message print hona chahiye (else branch)";
+    }else d="Sahi — aakhri line: \""+c.tail+"\"";
+    R(st,label,d);
+  });
+
+  const bad=rows.filter(r=>r.st==="bad").length, warn=rows.filter(r=>r.st==="warn").length;
+  const total=rows.length;
+  let verdict;
+  if(bad===0&&py)verdict={st:warn?"warn":"ok",text:warn?"✅ Code kaam karta hai, lekin "+warn+" cheez(ein) behtar ho sakti hain":"✅ Aap ka calculator reference code ke mutabiq hai — sab tests pass"};
+  else if(bad===0)verdict={st:"warn",text:"⚠️ Basic check theek hai, lekin programs run nahi ho sake (internet nahi tha)"};
+  else verdict={st:"bad",text:"❌ Code mein "+bad+" masla(e) mile — neeche table mein line number ke saath dekhein"};
+  return {rows,errLines,verdict,bad,warn,total};
+}
+
+async function analyzeCode(code){
+  const src=code.replace(/\r\n?/g,"\n");
+  let lint=[];try{lint=lintCode(src)}catch(e){}
+  let py=null;
+  try{
+    const p=await Promise.race([loadPy(),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),30000))]);
+    py=JSON.parse(p.globals.get("run_checks")(src));
+  }catch(e){py=null}
+  return buildReport(src,lint,py);
+}
+
+function renderCodeReport(sc,pass){
+  const rep=codeReport||{rows:[],errLines:new Set(),verdict:{st:"warn",text:"⚠️ Code check nahi ho saka"}};
+  $("crmeta").textContent=player+" · Attempt "+used+" of "+MAX+" · "+new Date().toLocaleString()+" · MCQ: "+sc+"/"+TOTAL+" ("+(pass?"PASS":"FAIL")+")";
+  $("crtitle").textContent="Title: "+projTitle;
+  const v=$("crverdict");v.className="cv cv-"+rep.verdict.st;v.textContent=rep.verdict.text;
+  const tb=$("crbody");tb.innerHTML="";
+  rep.rows.forEach(r=>{
+    const tr=document.createElement("tr");tr.className="r-"+r.st;
+    const a=document.createElement("td");a.textContent=r.check;
+    const b=document.createElement("td");b.className="st";b.textContent={ok:"✅",bad:"❌",warn:"⚠️",skip:"⏭️"}[r.st];
+    const c=document.createElement("td");c.textContent=r.detail;
+    tr.append(a,b,c);tb.appendChild(tr);
+  });
+  const box=$("crcode");box.innerHTML="";
+  projCode.replace(/\r\n?/g,"\n").split("\n").forEach((l,i)=>{
+    const d=document.createElement("div");d.className="cl"+(rep.errLines.has(i+1)?" err":"");
+    const n=document.createElement("span");n.className="n";n.textContent=i+1;
+    const s=document.createElement("span");s.textContent=l||" ";
+    d.append(n,s);box.appendChild(d);
+  });
+  $("creport").classList.remove("hide");
+}
+
+// ---------- Tab / window switch = quiz band, attempt gina gaya ----------
+function abortQuiz(){
+  if(!active)return;
+  active=false;put("pq_live",false);
+  const msg="⚠️ Aap ne tab ya window switch kiya, is liye quiz band ho gaya aur wo attempt gina gaya. Dobara shuru karein ge to naya attempt hoga.";
+  home();
+  if(used>=MAX){$("lockInfo").textContent=msg+" "+$("lockInfo").textContent}
+  else{$("leftWarn").textContent=msg;$("leftWarn").classList.remove("hide")}
+  window.scrollTo(0,0);
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)abortQuiz()});
+window.addEventListener("blur",abortQuiz);
+</script>
+</body>
+</html>
