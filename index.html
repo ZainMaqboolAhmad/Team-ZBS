@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Quiz · Lecture 1</title>
+<style>
+:root{--bg1:#4f46e5;--bg2:#7c3aed;--card:#fff;--tx:#1b1f2a;--mut:#667085;--bd:#e4e7ec;--ok:#16a34a;--bad:#dc2626;--pri:#4f46e5}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,sans-serif;color:var(--tx);
+ background:linear-gradient(135deg,var(--bg1),var(--bg2));padding:16px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:640px}
+.top{color:#fff;text-align:center;margin:8px 0 14px}
+.top h1{margin:0;font-size:22px}
+.top p{margin:4px 0 0;opacity:.85;font-size:14px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25);margin-bottom:14px}
+.hide{display:none}
+input[type=text]{width:100%;padding:13px;border:2px solid var(--bd);border-radius:10px;font-size:16px;margin:10px 0}
+input[type=text]:focus{outline:0;border-color:var(--pri)}
+button.main{width:100%;background:var(--pri);color:#fff;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:600;cursor:pointer}
+button.main:active{transform:scale(.98)}
+.info{color:var(--mut);font-size:14px;line-height:1.6;margin:6px 0 4px}
+.warn{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:10px;font-size:14px;margin:8px 0}
+.att{display:inline-block;background:#eef0ff;color:var(--pri);font-weight:700;border-radius:99px;padding:5px 12px;font-size:14px;margin:6px 0}
+.prog{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:6px}
+.bar{height:8px;background:var(--bd);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.fill{height:100%;background:linear-gradient(90deg,var(--bg1),var(--bg2));width:0;transition:width .3s}
+.q{font-size:18px;font-weight:650;line-height:1.45;margin-bottom:14px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:#fff;border:2px solid var(--bd);
+ border-radius:12px;padding:13px;margin:9px 0;font-size:15.5px;cursor:pointer;color:var(--tx);transition:.15s}
+.opt:hover{border-color:var(--pri)}
+.opt b{flex:none;width:28px;height:28px;border-radius:50%;background:#eef0ff;color:var(--pri);display:grid;place-items:center;font-size:13px}
+.opt.sel{border-color:var(--pri);background:#eef0ff}
+.opt.sel b{background:var(--pri);color:#fff}
+.opt:disabled{cursor:default}
+.res{text-align:center}
+.res .big{font-size:52px;font-weight:800;color:var(--pri);margin:4px 0}
+.res .nm{font-size:18px;font-weight:600}
+.status{display:inline-block;font-size:20px;font-weight:800;border-radius:99px;padding:6px 18px;margin:2px 0 6px}
+.status.pass{background:rgba(22,163,74,.14);color:var(--ok)}
+.status.fail{background:rgba(220,38,38,.12);color:var(--bad)}
+.res .msg{color:var(--mut);margin:4px 0 10px}
+.stats{display:flex;gap:10px;margin:12px 0}
+.stats div{flex:1;border-radius:12px;padding:10px;font-weight:700;font-size:15px}
+.stats .g{background:rgba(22,163,74,.12);color:var(--ok)}
+.stats .r{background:rgba(220,38,38,.12);color:var(--bad)}
+.ss{background:#fff7e6;border:2px dashed #f59e0b;color:#92400e;border-radius:12px;padding:12px;font-weight:700;font-size:15px;margin-top:10px;text-align:center}
+.rv{border-left:5px solid var(--ok);padding:10px 12px;background:#f8fafc;border-radius:8px;margin:10px 0;font-size:14.5px}
+.rv.x{border-left-color:var(--bad)}
+.rv .t{font-weight:650;margin-bottom:6px}
+.rv .a{margin:3px 0}
+.rv .ok{color:var(--ok);font-weight:600}
+.rv .no{color:var(--bad);font-weight:600}
+h2{margin:0 0 4px;font-size:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>🐍 Python Quiz</h1><p>Lecture 1 · Introduction to Programming and Python</p></div>
+
+  <div class="card" id="start">
+    <h2>Start karne se pehle</h2>
+    <div class="warn hide" id="leftWarn"></div>
+    <p class="info">Har dafa <b>20 naye MCQs</b> aayenge (random). Har sawal ka sirf <b>ek dafa</b> jawab de sakte hain. Aap ke paas total <b>3 attempts</b> hain.</p>
+    <p class="info"><b>Dhyan rahe:</b> agar quiz beech mein chhor kar bahar aa gaye ya page band/refresh kiya, to wo <b>ek attempt</b> gina jayega.</p>
+    <p class="info"><b>Pass hone ke liye</b> 20 mein se kam az kam <b>12 sahi</b> jawab chahiye.</p>
+    <div class="att" id="attLeft"></div>
+    <input type="text" id="name" placeholder="Apna naam likhein" maxlength="40">
+    <button class="main" id="go">Quiz Shuru Karein</button>
+  </div>
+
+  <div class="card hide" id="locked">
+    <h2>🔒 Aap ke 3 attempts khatam ho gaye</h2>
+    <p class="info" id="lockInfo"></p>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+
+  <div class="card hide" id="play">
+    <div class="prog"><span id="pn">Question 1 of 20</span><span id="pa"></span></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="q" id="qt"></div>
+    <div id="opts"></div>
+  </div>
+
+  <div class="card hide res" id="result">
+    <div class="nm" id="rn"></div>
+    <div class="big" id="rs"></div>
+    <div class="status" id="rst"></div>
+    <div class="msg" id="rm"></div>
+    <div class="stats"><div class="g" id="rc"></div><div class="r" id="rw"></div></div>
+    <div class="info" id="rd"></div>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+
+  <div class="card hide" id="review"><h2>Aap ke jawabat ka jaiza</h2><div id="rvlist"></div>
+    <button class="main" id="again" style="margin-top:12px">Agla Attempt Dein</button>
+    <div class="ss">📸 Take a screenshot of your result and send it to your CR.</div>
+  </div>
+</div>
+
+<script>
+// Question bank (PDF ke alfaz mein). Har attempt mein 20 random aate hain.
+const BANK=[
+["What is a program?", ["A set of instructions that tells a computer what to do", "A mistake in the code", "A tool for writing code", "A step-by-step method for solving a problem"], 0],
+["Every program follows which basic pattern?", ["Input → Process → Output", "Save → Load → Run", "Write → Test → Fix", "Read → Print → Stop"], 0],
+["What is an algorithm?", ["A clear, step-by-step method for solving a problem", "The text of a program", "A mistake in a program", "The grammar rules of a language"], 0],
+["What is syntax?", ["The grammar rules of a language", "A mistake in a program", "A tool for writing code", "The process of fixing bugs"], 0],
+["What is a bug?", ["A mistake in a program that causes wrong or unexpected behaviour", "A tool for writing code", "A set of instructions", "The grammar rules of a language"], 0],
+["What is debugging?", ["The process of finding and fixing bugs", "Writing source code", "Installing Python", "Running a program"], 0],
+["What is source code?", ["The text of a program, written by a human in a programming language", "Binary instructions for the CPU", "The result of a program", "A type of computer"], 0],
+["Which part of the computer executes instructions?", ["CPU", "RAM", "Storage", "Printer"], 0],
+["What is RAM?", ["Fast, temporary memory for running programs", "Permanent space for files and installed programs", "The part that executes instructions", "The part that presents results to the user"], 0],
+["Which is permanent: RAM or storage?", ["Storage", "RAM", "CPU", "Both are temporary"], 0],
+["What is a program's journey?", ["Saved in storage, loaded into RAM, run by the CPU", "Saved in RAM, loaded into storage, run by the CPU", "Saved in the CPU, loaded into RAM, run by storage", "Saved in storage, loaded into the CPU, run by RAM"], 0],
+["A CPU understands only one language. Which one?", ["Machine code", "Python", "Assembly", "Java"], 0],
+["Python is which type of language?", ["High-level language", "Machine code", "Assembly language", "Binary language"], 0],
+["Which translator translates the whole program before it runs?", ["Compiler", "Interpreter", "Editor", "Terminal"], 0],
+["What does an interpreter do?", ["Reads and runs the program line by line", "Translates the whole program first", "Creates an executable file", "Writes pseudocode"], 0],
+["Which pair of languages is compiled?", ["C and C++", "Python and Ruby", "Python and PHP", "Ruby and PHP"], 0],
+["When you run python hello.py, Python first compiles your source code into what?", ["Bytecode", "Machine code", "Pseudocode", "A flowchart"], 0],
+["What executes the bytecode in Python?", ["The Python Virtual Machine (PVM)", "The compiler", "The editor", "The terminal"], 0],
+["In an algorithm, what does 'Finite' mean?", ["It ends after a limited number of steps", "Every step is precise and unambiguous", "It takes zero or more inputs", "It produces at least one result"], 0],
+["What is pseudocode best for?", ["Planning the logic before coding", "Seeing decisions and loops at a glance", "Running the program", "Installing Python"], 0],
+["In a flowchart, what is the Decision symbol used for?", ["A yes/no question that splits the path", "The Start and End of the algorithm", "Reading data in", "A calculation or an action"], 0],
+["Who created Python?", ["Guido van Rossum", "Tim Peters", "Dennis Ritchie", "Monty Python"], 0],
+["In which year was Python first released?", ["1991", "1981", "2001", "2020"], 0],
+["Python is named after what?", ["The British comedy group Monty Python", "The snake", "A Greek god", "Its creator"], 0],
+["What does 'dynamically typed' mean?", ["You do not declare variable types; Python works them out for you", "You must declare every variable type", "Variables cannot change", "Python has no variables"], 0],
+["Python 2 reached end of life in which year?", ["2020", "2010", "2015", "2024"], 0],
+["Which command checks the Python version on Windows?", ["python --version", "python3 --version", "py check", "version python"], 0],
+["Which mode shows results immediately after each line and does not save your code?", ["REPL (interactive mode)", "Script (a .py file)", "Compiler", "Bytecode"], 0],
+["What is the output of print(\"Python\", \"is\", \"fun\", sep=\"-\")?", ["Python-is-fun", "Python is fun", "Python,is,fun", "Python-is-fun-"], 0],
+["What does \\n do inside a string?", ["Starts a new line", "Adds a space", "Ends the program", "Adds a comment"], 0],
+["A comment in Python starts with which symbol?", ["#", "//", "/*", "--"], 0],
+["What type of value does input() always return?", ["A string (str)", "An int", "A float", "A bool"], 0],
+["Which is a valid variable name?", ["first_name", "2age", "first name", "for"], 0],
+["What does type(3.14) show?", ["<class 'float'>", "<class 'int'>", "<class 'str'>", "<class 'bool'>"], 0],
+["Which error type does Python never report on its own?", ["Logic error", "Syntax error", "Runtime error", "Traceback"], 0],
+["When is a syntax error detected?", ["Before the program starts", "While the program runs", "Never", "After the output"], 0],
+["Using an undefined name or dividing by zero causes which error?", ["Runtime error", "Syntax error", "Logic error", "No error"], 0],
+["What does average = 10 + 20 / 2 print as the average?", ["20.0", "15.0", "30.0", "25.0"], 0],
+["When reading a traceback, where should you start?", ["At the last line", "At the first line", "In the middle", "You should ignore it"], 0],
+["What is PEP 8?", ["Python's style guide", "A Python editor", "A type of error", "A Python library"], 0]
+];
+
+const TOTAL=20, MAX=3, PASS=12;
+// Fail hone walon ke liye line (yahan se badal sakte hain)
+const ROAST="Ghar ke paani mein doobo ge ya CR paani parcel karwaye? 😂";
+const $=id=>document.getElementById(id);
+function get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
+function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+// OWNER RESET: testing ke baad attempts wapis karne ke liye link ke aakhir mein #admin-reset-7391 lagayen
+if(location.hash==="#admin-reset-7391"){
+  ["pq_used","pq_scores","pq_live","pq_name"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  history.replaceState(null,"",location.pathname+location.search);
+}
+let used=get("pq_used",0), scores=get("pq_scores",[]), set=[], cur=0, ans=[], player=get("pq_name",""), busy=false;
+
+// Agar pichli dafa quiz beech mein chhora gaya tha (attempt pehle hi gina ja chuka hai)
+if(get("pq_live",false)){
+  put("pq_live",false);
+  $("leftWarn").textContent="⚠️ Pichli dafa aap ne quiz beech mein chhor diya tha, is liye wo ek attempt gina gaya.";
+  $("leftWarn").classList.remove("hide");
+}
+$("name").value=player;
+home();
+
+function home(){
+  $("play").classList.add("hide");$("result").classList.add("hide");$("review").classList.add("hide");
+  if(used>=MAX){
+    $("start").classList.add("hide");$("locked").classList.remove("hide");
+    $("lockInfo").textContent=(player?player+", ":"")+"aap ne tino attempts use kar liye hain. "+
+      (scores.length?"Aap ke scores: "+scores.map((s,i)=>"Attempt "+(i+1)+": "+s).join(" · ")+".":"");
+  }else{
+    $("locked").classList.add("hide");$("start").classList.remove("hide");
+    $("attLeft").textContent="Attempts bache hain: "+(MAX-used)+" / "+MAX;
+  }
+}
+
+$("go").onclick=()=>{
+  player=$("name").value.trim();
+  if(!player){$("name").focus();$("name").style.borderColor="#dc2626";return}
+  put("pq_name",player);
+  // Attempt usi waqt gina jata hai jab quiz shuru ho
+  used++;put("pq_used",used);put("pq_live",true);
+  // 40 mein se 20 random sawal, aur options bhi random order mein
+  set=shuffle(BANK).slice(0,TOTAL).map(q=>{
+    const idx=shuffle([0,1,2,3]);
+    return {q:q[0],opts:idx.map(i=>q[1][i]),ans:idx.indexOf(q[2])};
+  });
+  cur=0;ans=[];
+  $("leftWarn").classList.add("hide");
+  $("start").classList.add("hide");$("play").classList.remove("hide");
+  $("pa").textContent="Attempt "+used+" of "+MAX;
+  show();
+};
+
+function show(){
+  busy=false;
+  const q=set[cur];
+  $("pn").textContent="Question "+(cur+1)+" of "+TOTAL;
+  $("fill").style.width=(cur/TOTAL*100)+"%";
+  $("qt").textContent=(cur+1)+". "+q.q;
+  const box=$("opts");box.innerHTML="";
+  q.opts.forEach((o,j)=>{
+    const b=document.createElement("button");b.className="opt";
+    const l=document.createElement("b");l.textContent="ABCD"[j];
+    const s=document.createElement("span");s.textContent=o;
+    b.append(l,s);b.onclick=()=>pick(j,b);box.appendChild(b);
+  });
+}
+
+function pick(j,btn){
+  if(busy)return;busy=true;
+  ans[cur]=j;
+  document.querySelectorAll("#opts .opt").forEach(x=>x.disabled=true);
+  btn.classList.add("sel");
+  setTimeout(()=>{cur++;cur<TOTAL?show():finish()},450);
+}
+
+function finish(){
+  put("pq_live",false);
+  $("fill").style.width="100%";
+  $("play").classList.add("hide");
+  let sc=0;set.forEach((q,i)=>{if(ans[i]===q.ans)sc++});
+  scores.push(sc+"/"+TOTAL);put("pq_scores",scores);
+  const pct=Math.round(sc/TOTAL*100);
+  $("rn").textContent=player+" · Attempt "+used+" of "+MAX;
+  $("rs").textContent=sc+" / "+TOTAL;
+  const pass=sc>=PASS;
+  $("rst").textContent=pass?"✅ PASS":"❌ FAIL";
+  $("rst").className="status "+(pass?"pass":"fail");
+  $("rm").textContent=pct+"% · "+(pass?"Mubarak ho! Aap pass ho gaye 🎉":ROAST+" (Pass hone ke liye kam az kam "+PASS+" sahi chahiye)");
+  $("rc").textContent="✅ Sahi: "+sc;
+  $("rw").textContent="❌ Ghalat: "+(TOTAL-sc);
+  $("rd").textContent=new Date().toLocaleString();
+  $("result").classList.remove("hide");
+
+  const list=$("rvlist");list.innerHTML="";
+  set.forEach((q,i)=>{
+    const ok=ans[i]===q.ans;
+    const d=document.createElement("div");d.className="rv"+(ok?"":" x");
+    const t=document.createElement("div");t.className="t";t.textContent=(ok?"✅ ":"❌ ")+(i+1)+". "+q.q;
+    const a=document.createElement("div");a.className="a "+(ok?"ok":"no");
+    a.textContent="Aap ka jawab: "+"ABCD"[ans[i]]+") "+q.opts[ans[i]];
+    d.append(t,a);
+    if(!ok){
+      const c=document.createElement("div");c.className="a ok";
+      c.textContent="Sahi jawab: "+"ABCD"[q.ans]+") "+q.opts[q.ans];
+      d.appendChild(c);
+    }
+    list.appendChild(d);
+  });
+  $("again").textContent=used>=MAX?"Aap ke attempts khatam ho gaye":"Agla Attempt Dein ("+(MAX-used)+" bache)";
+  $("again").disabled=used>=MAX;
+  $("again").style.opacity=used>=MAX?".5":"1";
+  $("review").classList.remove("hide");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("again").onclick=()=>{if(used<MAX){home();window.scrollTo(0,0)}};
+</script>
+</body>
+</html>
