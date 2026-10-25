@@ -19,16 +19,17 @@ pre{white-space:pre-wrap;background:#0002;padding:10px;border-radius:8px;font-si
 table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid #8884;text-align:left;font-size:14px}summary{cursor:pointer}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.stat{background:var(--bg);border-radius:10px;padding:10px;display:flex;flex-direction:column}.stat b{font-size:22px}.stat span{font-size:12px;opacity:.75}
 .cf{position:fixed;top:-30px;font-size:24px;animation:fall 2.8s linear forwards;pointer-events:none;z-index:9}@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.2}}</style></head><body>
-<h2>🐍 Python Quiz + Calculator</h2><div id="app"></div>
+<h2>🐍 Python Quiz + Calculator</h2><div id="app"></div><p class="tiny" id="ver">v5</p>
 <script>
-// ===== CONFIG (change only this part) =====
-const CFG={
- API:"",              // paste your Google Apps Script Web App URL here (ends with /exec)
- MAX:2,               // attempts per student
- NQ:10,               // MCQs per attempt
- TIME_LIMIT_MIN:25,   // minutes per attempt (0 = no limit)
- ROSTER:[]            // optional, e.g. ["Ali Khan","Saim Ahmad"] — students then pick their name from a list
-};
+// Error catcher: if anything breaks, the error is printed on the page (send a screenshot of it)
+window.__ok=false;
+function __showErr(t){var d=document.getElementById("err");if(!d){d=document.createElement("pre");d.id="err";d.style.cssText="color:#f87171;white-space:pre-wrap;font-size:13px;border:1px solid #f87171;padding:10px;border-radius:10px";document.body.appendChild(d)}d.textContent+=t+"\n"}
+window.addEventListener("error",function(e){__showErr("ERROR: "+(e.message||"script error")+(e.filename?" ("+e.filename.split("/").pop()+":"+e.lineno+")":""))});
+window.addEventListener("load",function(){setTimeout(function(){if(!window.__ok)__showErr("The quiz script did not start. Screenshot this page and send it. (Check that index.html was pasted ONCE, and config.js exists.)")},800)});
+</script>
+<script src="config.js"></script>
+<script>
+const CFG=Object.assign({API:"",MAX:2,NQ:10,TIME_LIMIT_MIN:25,ROSTER:[]},window.ZCFG||{});
 const Q=[
 ["A program is...","A set of instructions for a computer","A type of hardware","A bug","A keyboard"],
 ["Every program follows which pattern?","Input → Process → Output","Output → Input → Process","Save → Delete → Run","Read → Write → Stop"],
@@ -171,13 +172,14 @@ const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math
 const tmo=(p,ms)=>Promise.race([p,new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),ms))]);
 let st=Object.assign({name:"",dev:rid(),attempts:0,best:null,locked:false,viol:0,active:false},jp(ls.g("zq4"),{}));
 const save=()=>ls.s("zq4",JSON.stringify(st));save();
-let IP="unknown",cur=null,msg="",net=CFG.API?"checking":"offline",busy=false,timer=null;
+let IP="unknown",cur=null,msg="",net=!CFG.API?"offline":/^https:\/\/script\.google\.com\/.+\/exec$/.test(CFG.API)?"checking":"badurl",busy=false,timer=null;
 const ipP=tmo(fetch("https://api.ipify.org?format=json").then(r=>r.json()),3500).then(j=>{IP=j.ip}).catch(()=>{});
 const lastR=()=>jp(ls.g("zl4"),null);
-const badge=()=>!CFG.API?"🟡 Offline mode — results are NOT sent to your teacher":net==="ok"?"🟢 Connected":net==="checking"?"⏳ Connecting…":"🔴 Cannot reach the server — check your internet";
+const badge=()=>net==="badurl"?"🔴 The API URL in config.js looks wrong. It must start with https://script.google.com and end with /exec":!CFG.API?"🟡 Offline mode — results are NOT sent to your teacher":net==="ok"?"🟢 Connected":net==="checking"?"⏳ Connecting…":"🔴 Cannot reach the server — check your internet";
 // ----- server calls -----
 async function api(d,ms){
  if(!CFG.API)return{ok:true,local:true};
+ if(net==="badurl")return null;
  await ipP;
  try{
   const r=await tmo(fetch(CFG.API,{method:"POST",body:JSON.stringify({name:st.name,dev:st.dev,ip:IP,ua:navigator.userAgent.slice(0,90),...d})}).then(x=>x.text()),ms||15000);
@@ -192,6 +194,4 @@ async function sync(){const s=await api({event:"status"});
 // ----- screens -----
 function home(){
  const done=st.locked||st.attempts>=MAX,L=lastR();
- const nameBox=CFG.ROSTER.length?`<select id="nm"><option value="">— Select your name —</option>${CFG.ROSTER.map(n=>`<option>${esc(n)}</option>`).join("")}</select>`:'<input id="nm" placeholder="Your full name" autocomplete="name">';
- const rules=`<div class="c"><b>Rules</b><ul class="tiny"><li>${NQ} multiple-choice questions + 1 Python calculator task (20 marks total).</li><li>You get ${MAX} attempts. Each attempt uses new random questions.</li>${CFG.TIME_LIMIT_MIN?`<li>Time limit: ${CFG.TIME_LIMIT_MIN} minutes per attempt.</li>`:""}<li>If you leave this screen, switch apps or reload during a test, that attempt is cancelled.</li><li>Code must be typed. Paste, copy and drag-drop are blocked.</li><li>Your IP address and device are recorded.</li></ul></div>`;
- app.innerHTML=msg+(st.name?`<div class="c"><b>Welcome back, ${esc(st.name)}! 👋</b><p class="tiny">Attempts used: ${st.attempts}/${MAX}${st.best!=null?" · Best score: "+st.
+ const nameBox=CFG.ROSTER.length?`<select id="nm"><option value="">— Select your name —</option>${CFG.ROSTER.map(n=>`<option>${esc(n)}</option>`).join("")}</se
