@@ -3,28 +3,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff;--fg:#1a1a1a;--card:#f3f4f6;--ac:#2563eb;--ok:#16a34a;--bad:#dc2626}
 @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#f1f5f9;--card:#1e293b;--ac:#60a5fa;--ok:#4ade80;--bad:#f87171}}
-html,body{margin:0}body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif;padding:16px;max-width:640px;margin:auto;-webkit-user-select:none;user-select:none}
+html,body{margin:0}body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif;padding:16px;max-width:680px;margin:auto;-webkit-user-select:none;user-select:none}
 textarea,input{-webkit-user-select:text;user-select:text}
 h2{animation:pop .5s ease}.c{background:var(--card);border-radius:14px;padding:14px;margin:12px 0;animation:pop .35s ease}
 @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
-button,input,textarea{font:inherit;border-radius:10px;border:1px solid #8884;padding:12px;width:100%;box-sizing:border-box;background:var(--bg);color:var(--fg)}
+button,input,textarea,select{font:inherit;border-radius:10px;border:1px solid #8884;padding:12px;width:100%;box-sizing:border-box;background:var(--bg);color:var(--fg)}
 textarea{font-family:ui-monospace,monospace;font-size:14px}
 button{cursor:pointer;margin-top:8px;text-align:left;transition:transform .12s,background .2s}button:active{transform:scale(.97)}button:hover{border-color:var(--ac)}
 button.p{background:var(--ac);color:#fff;text-align:center;border:0}button:disabled{opacity:.6}
 .k{width:auto;display:inline-block;padding:8px 14px;margin:4px 4px 0 0;font-family:monospace}
-.ok{color:var(--ok)}.bad{color:var(--bad)}.tiny{font-size:13px;opacity:.75}
-.bar{height:6px;background:#8883;border-radius:9px;overflow:hidden;margin-bottom:8px}.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .5s ease}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.tiny{font-size:13px;opacity:.8}ul{padding-left:20px;margin:6px 0}
+.row{display:flex;justify-content:space-between;gap:8px}
+.bar{height:6px;background:#8883;border-radius:9px;overflow:hidden;margin:2px 0 8px}.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .5s ease}
 pre{white-space:pre-wrap;background:#0002;padding:10px;border-radius:8px;font-size:13px}
 table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid #8884;text-align:left;font-size:14px}summary{cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.stat{background:var(--bg);border-radius:10px;padding:10px;display:flex;flex-direction:column}.stat b{font-size:22px}.stat span{font-size:12px;opacity:.75}
 .cf{position:fixed;top:-30px;font-size:24px;animation:fall 2.8s linear forwards;pointer-events:none;z-index:9}@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.2}}</style></head><body>
 <h2>🐍 Python Quiz + Calculator</h2><div id="app"></div>
 <script>
-// ===== CONFIG (sirf yahan badlo) =====
+// ===== CONFIG (change only this part) =====
 const CFG={
- API:"",            // Apps Script Web App URL yahan paste karo
- MAX:2,             // kitne attempts
- NQ:10,             // kitne MCQ har bande ko
- ROSTER:[]          // optional: ["Ali Khan","Saim Ahmad"] — phir banda list se naam chunta hai
+ API:"",              // paste your Google Apps Script Web App URL here (ends with /exec)
+ MAX:2,               // attempts per student
+ NQ:10,               // MCQs per attempt
+ TIME_LIMIT_MIN:25,   // minutes per attempt (0 = no limit)
+ ROSTER:[]            // optional, e.g. ["Ali Khan","Saim Ahmad"] — students then pick their name from a list
 };
 const Q=[
 ["A program is...","A set of instructions for a computer","A type of hardware","A bug","A keyboard"],
@@ -69,29 +72,29 @@ const Q=[
 ["Celsius to Fahrenheit formula?","F = C × 9 ÷ 5 + 32","F = C + 32","F = C × 5 ÷ 9","F = C − 32"],
 ["When should you decide expected test answers?","Before running the program","After running it","Never","Only if it fails"]
 ];
-// ---------- mini Python checker ----------
+// ---------- mini Python checker (def, if/elif/else, input, print, variables, + - * / // % **, comparisons) ----------
 class PE{constructor(t,m,l){this.t=t;this.m=m;this.l=l}}
 class Ret{constructor(v){this.v=v}}
 const cut=s=>{let q=null;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c==="\\")i++;else if(c===q)q=null}else if(c==='"'||c==="'")q=c;else if(c==="#")return s.slice(0,i)}return s};
-const tk=(s,n)=>{const re=/\s*(?:(\d+\.?\d*|\.\d+)|(f?)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\/\/|\*\*|==|!=|<=|>=|[-+*\/%(),=<>:]))/y,T=[];while(!/^\s*$/.test(s.slice(re.lastIndex))){const m=re.exec(s);if(!m)throw new PE("SyntaxError","invalid syntax (quote/bracket ya symbol check karo)",n);T.push(m[1]!==undefined?{t:"n",v:+m[1]}:m[3]?{t:m[2]?"f":"s",v:m[3].slice(1,-1)}:m[4]?{t:"i",v:m[4]}:{t:"o",v:m[5]})}return T};
+const tk=(s,n)=>{const re=/\s*(?:(\d+\.?\d*|\.\d+)|(f?)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\/\/|\*\*|==|!=|<=|>=|[-+*\/%(),=<>:]))/y,T=[];while(!/^\s*$/.test(s.slice(re.lastIndex))){const m=re.exec(s);if(!m)throw new PE("SyntaxError","invalid syntax (check quotes, brackets or symbols)",n);T.push(m[1]!==undefined?{t:"n",v:+m[1]}:m[3]?{t:m[2]?"f":"s",v:m[3].slice(1,-1)}:m[4]?{t:"i",v:m[4]}:{t:"o",v:m[5]})}return T};
 function runPy(src,inp){
  const out=[],V={True:true,False:false,__name__:"__main__"},F={};let k=0,steps=0;
  const fmt=v=>typeof v==="string"?v:v===true?"True":v===false?"False":v===null?"None":String(v);
  const bin=(o,a,b,n)=>{const sa=typeof a==="string",sb=typeof b==="string";
   if(o==="==")return a===b;if(o==="!=")return a!==b;
-  if(["<",">","<=",">="].includes(o)){if(typeof a!==typeof b)throw new PE("TypeError","'"+o+"' str aur number ke beech nahi chal sakta (input ko int()/float() karo)",n);return o==="<"?a<b:o===">"?a>b:o==="<="?a<=b:a>=b}
+  if(["<",">","<=",">="].includes(o)){if(typeof a!==typeof b)throw new PE("TypeError","'"+o+"' not supported between str and number (convert input with int()/float())",n);return o==="<"?a<b:o===">"?a>b:o==="<="?a<=b:a>=b}
   if(o==="+"){if(sa&&sb)return a+b;if(sa||sb)throw new PE("TypeError",sa?'can only concatenate str (not "int") to str':"unsupported operand type(s) for +: 'int' and 'str'",n);return a+b}
   if(o==="*"){if(sa&&sb)throw new PE("TypeError","can't multiply sequence by non-int of type 'str'",n);if(sa)return a.repeat(Math.max(0,b));if(sb)return b.repeat(Math.max(0,a));return a*b}
-  if(sa||sb)throw new PE("TypeError","unsupported operand type(s) for "+o+" (str aur number mix)",n);
+  if(sa||sb)throw new PE("TypeError","unsupported operand type(s) for "+o+" (str and number mixed)",n);
   if((o==="/"||o==="//"||o==="%")&&b===0)throw new PE("ZeroDivisionError","division by zero",n);
   return o==="-"?a-b:o==="/"?a/b:o==="//"?Math.floor(a/b):o==="%"?a-b*Math.floor(a/b):a**b};
  const call=(f,a,n)=>{const x=a[0];
-  if(f==="input"){if(k>=inp.length)throw new PE("EOFError","input() ko value nahi mili",n);return String(inp[k++])}
+  if(f==="input"){if(k>=inp.length)throw new PE("EOFError","input() received no value",n);return String(inp[k++])}
   if(f==="int"||f==="float"){if(typeof x==="string"){if(!/^\s*[-+]?(\d+\.?\d*|\.\d+)\s*$/.test(x)||(f==="int"&&!/^\s*[-+]?\d+\s*$/.test(x)))throw new PE("ValueError","invalid literal for "+f+"()",n);return +x}return f==="int"?Math.trunc(x):x}
   if(f==="str")return fmt(x);
   if(f==="round"){const d=a[1]||0;return Math.round(x*10**d)/10**d}
   throw new PE("NameError","name '"+f+"' is not defined",n)};
- const callU=(f,a,n)=>{if(++steps>3000)throw new PE("RuntimeError","bahut zyada steps",n);f.params.forEach((p,i)=>V[p]=a[i]);try{execBlock(f.start,f.ind)}catch(e){if(e instanceof Ret)return e.v;throw e}return null};
+ const callU=(f,a,n)=>{if(++steps>3000)throw new PE("RuntimeError","too many steps",n);f.params.forEach((p,i)=>V[p]=a[i]);try{execBlock(f.start,f.ind)}catch(e){if(e instanceof Ret)return e.v;throw e}return null};
  const mk=(T,n)=>{let p=0;
   const isO=v=>T[p]&&T[p].t==="o"&&T[p].v===v,isI=v=>T[p]&&T[p].t==="i"&&T[p].v===v;
   const need=v=>{if(!isO(v))throw new PE("SyntaxError",v===")"?"'(' was never closed":v===":"?"expected ':'":"invalid syntax",n);p++};
@@ -104,7 +107,7 @@ function runPy(src,inp){
   function term(){let a=un();while(isO("*")||isO("/")||isO("//")||isO("%")){const o=T[p++].v;a=bin(o,a,un(),n)}return a}
   function un(){if(isO("-")){p++;return bin("-",0,un(),n)}const a=atom();if(isO("**")){p++;return bin("**",a,un(),n)}return a}
   function args(){const a=[];while(T[p]&&!isO(")")){let kw=null;if(T[p].t==="i"&&T[p+1]&&T[p+1].t==="o"&&T[p+1].v==="="){kw=T[p].v;p+=2}const v=expr();a.push(kw?{kw,v}:v);if(isO(","))p++;else break}return a}
-  function atom(){const t=T[p++];if(!t)throw new PE("SyntaxError","line adhoori hai",n);
+  function atom(){const t=T[p++];if(!t)throw new PE("SyntaxError","line is incomplete",n);
    if(t.t==="n"||t.t==="s")return t.v;if(t.t==="f")return fs(t.v);
    if(t.t==="i"){if(isO("(")){p++;const a=args();need(")");return F[t.v]?callU(F[t.v],a.filter(x=>!(x&&x.kw)),n):call(t.v,a,n)}if(!(t.v in V))throw new PE("NameError","name '"+t.v+"' is not defined",n);return V[t.v]}
    if(t.v==="("){const v=expr();need(")");return v}throw new PE("SyntaxError","invalid syntax",n)}
@@ -114,9 +117,9 @@ function runPy(src,inp){
  const skip=i=>{const ind=L[i].ind;let j=i+1;while(j<L.length&&L[j].ind>ind)j++;return j};
  function execBlock(i,ind){while(i<L.length&&L[i].ind>=ind){if(L[i].ind>ind)throw new PE("IndentationError","unexpected indent",L[i].n);i=stmt(i)}return i}
  function stmt(i){const l=L[i],T=l.T,h=T[0],n=l.n;
-  if(++steps>5000)throw new PE("RuntimeError","bahut zyada steps",n);
-  if(h.t==="i"&&/^(while|for|try|import|from|class|with|lambda)$/.test(h.v))throw new PE("Unsupported","'"+h.v+"' is test mein supported nahi (def/if/elif/else/input/print use karo)",n);
-  if(h.t==="i"&&(h.v==="elif"||h.v==="else"))throw new PE("SyntaxError","invalid syntax ("+h.v+" bina if ke)",n);
+  if(++steps>5000)throw new PE("RuntimeError","too many steps",n);
+  if(h.t==="i"&&/^(while|for|try|import|from|class|with|lambda)$/.test(h.v))throw new PE("Unsupported","'"+h.v+"' is not supported in this test (use def/if/elif/else/input/print)",n);
+  if(h.t==="i"&&(h.v==="elif"||h.v==="else"))throw new PE("SyntaxError","invalid syntax ("+h.v+" without if)",n);
   const endChk=m=>{if(m.p<T.length)throw new PE("SyntaxError","invalid syntax",n)};
   if(h.t==="i"&&h.v==="def"){if(!(T[1]&&T[1].t==="i"&&T[2]&&T[2].v==="("))throw new PE("SyntaxError","invalid syntax",n);let q=3;const ps=[];while(T[q]&&T[q].v!==")"){if(T[q].t==="i")ps.push(T[q].v);q++}
    if(!T[q])throw new PE("SyntaxError","'(' was never closed",n);if(!T[q+1]||T[q+1].v!==":")throw new PE("SyntaxError","expected ':'",n);F[T[1].v]={params:ps,start:i+1,ind:bodyInd(i)};return skip(i)}
@@ -135,62 +138,60 @@ function runPy(src,inp){
  return out}
 function grade(src){
  const clean=src.split("\n").map(cut).join("\n");
- if(!clean.trim())return{score:0,checks:[{ok:false,p:0,m:10,msg:"Code khali hai."}]};
+ if(!clean.trim())return{score:0,checks:[{ok:false,p:0,m:10,msg:"Code is empty."}]};
  const runs=[[1,15,4],[2,15,4],[3,15,4],[4,15,4],[1,25,8],[2,25,8],[3,25,8],[4,25,8],[4,5,0],[9,5,3]],exp=[[19,11,60,3.75],[33,17,200,3.125]];
  const R=runs.map(r=>{try{return{o:runPy(src,r)}}catch(e){if(!(e instanceof PE))throw e;return{e}}});
  const E=e=>`${e.t} (line ${e.l}): ${e.m}`,isSyn=e=>e&&/Syntax|Indent|Unsupp/.test(e.t);
  const syn=(R.find(r=>isSyn(r.e))||{}).e,rt=(R.slice(0,8).find(r=>r.e&&!isSyn(r.e))||{}).e;
  const nums=o=>(o.join(" ").match(/-?\d+\.?\d*/g)||[]).map(Number),has=(r,v)=>r.o&&nums(r.o).some(x=>Math.abs(x-v)<1e-6);
  const C=[],add=(ok,pt,_,msg)=>C.push({ok,p:ok?pt:0,m:pt,msg});
- add(!syn,1,0,syn?"Syntax galti → "+E(syn):"Syntax theek hai");
- add(!syn&&!rt,1,0,syn?"Syntax ki wajah se chala nahi":rt?"Chalte waqt error → "+E(rt)+(rt.t==="TypeError"?" (input() string deta hai, int()/float() se convert karo)":""):"Bina error ke chalta hai");
+ add(!syn,1,0,syn?"Syntax error → "+E(syn):"Syntax is correct");
+ add(!syn&&!rt,1,0,syn?"Did not run because of the syntax error":rt?"Error while running → "+E(rt)+(rt.t==="TypeError"?" (input() returns a string; convert it with int()/float())":""):"Runs without errors");
  const hasDef=/\bdef\s+\w+\s*\(/.test(clean),called=!!(R[0].o&&R[0].o.length);
- add(hasDef&&called,1,0,!hasDef?"def se function nahi banaya":!called?"Function banaya lekin end mein call nahi kiya (calculator())":"Function bana kar call kiya");
+ add(hasDef&&called,1,0,!hasDef?"No function created with def":!called?"Function was defined but never called (call calculator() at the end)":"Function defined and called");
  const conv=!syn&&!rt&&/\b(int|float)\s*\(/.test(clean);
- add(conv,1,0,conv?"int()/float() conversion kiya":"input ko int()/float() mein convert nahi kiya");
+ add(conv,1,0,conv?"Converted input with int()/float()":"Input was not converted with int()/float()");
  const ife=/\bif\b/.test(clean)&&/\belse\b/.test(clean);
- add(ife,0.5,0,ife?"if/elif/else use kiya":"if/elif/else use nahi hua");
+ add(ife,0.5,0,ife?"Used if/elif/else":"if/elif/else not used");
  ["Add (1)","Subtract (2)","Multiply (3)","Divide (4)"].forEach((nm,j)=>{const ok=has(R[j],exp[0][j])&&has(R[j+4],exp[1][j]);
-  add(ok,1,0,ok?nm+" sahi":nm+" galat ya print nahi hua (15 aur 4 par "+exp[0][j]+" aana chahiye)")});
+  add(ok,1,0,ok?nm+" correct":nm+" is wrong or not printed (for 15 and 4 it should show "+exp[0][j]+")")});
  const z=R[8],zok=!!(z.o&&/zero|error|undefined|cannot|invalid|not allowed/i.test(z.o.join(" ")));
- add(zok,1,0,zok?"Zero se divide handle kiya":z.e?"Zero se divide par crash → "+E(z.e):"Divide by zero par error message print nahi kiya");
+ add(zok,1,0,zok?"Division by zero handled":z.e?"Crashed on division by zero → "+E(z.e):"No error message printed for division by zero");
  const v=R[9],vok=!!(v.o&&/invalid|wrong|error|incorrect/i.test(v.o.join(" ")));
- add(vok,0.5,0,vok?"Invalid operation handle kiya":"Galat operation (jaise 9) par 'Invalid operation!' print nahi hua");
+ add(vok,0.5,0,vok?"Invalid operation handled":"Invalid choice (e.g. 9) did not print 'Invalid operation!'");
  return{score:C.reduce((a,c)=>a+c.p,0),checks:C}}
 // ---------- app ----------
 const $=id=>document.getElementById(id),app=$("app"),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const jp=(s,d)=>{try{const v=JSON.parse(s);return v==null?d:v}catch(e){return d}};
 const ls={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-const r1=n=>Math.round(n*10)/10,MAX=CFG.MAX,NQ=CFG.NQ;
-let st=Object.assign({name:"",dev:Math.random().toString(36).slice(2,10)+Date.now().toString(36),attempts:0,best:null,locked:false,viol:0,active:false},JSON.parse(ls.g("zq3")||"{}"));
-const save=()=>ls.s("zq3",JSON.stringify(st));save();
-let IP="unknown",cur=null,msg="";
-const ipP=fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(j=>{IP=j.ip}).catch(()=>{});
-const lastR=()=>JSON.parse(ls.g("zl3")||"null");
-async function api(d){if(!CFG.API)return{ok:true,local:true};await ipP;try{const r=await fetch(CFG.API,{method:"POST",body:JSON.stringify({...d,name:st.name,dev:st.dev,ip:IP,ua:navigator.userAgent.slice(0,80)})});return await r.json()}catch(e){return null}}
-async function sync(){const s=await api({event:"status"});if(s&&!s.local&&s.attempts!=null){st.attempts=s.attempts;st.best=s.best;st.viol=s.cheats;st.locked=s.attempts>=MAX;save()}}
+const ss={g:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}}};
+const r1=n=>Math.round(n*10)/10,MAX=CFG.MAX,NQ=Math.min(CFG.NQ,Q.length);
+const rid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const tmo=(p,ms)=>Promise.race([p,new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),ms))]);
+let st=Object.assign({name:"",dev:rid(),attempts:0,best:null,locked:false,viol:0,active:false},jp(ls.g("zq4"),{}));
+const save=()=>ls.s("zq4",JSON.stringify(st));save();
+let IP="unknown",cur=null,msg="",net=CFG.API?"checking":"offline",busy=false,timer=null;
+const ipP=tmo(fetch("https://api.ipify.org?format=json").then(r=>r.json()),3500).then(j=>{IP=j.ip}).catch(()=>{});
+const lastR=()=>jp(ls.g("zl4"),null);
+const badge=()=>!CFG.API?"🟡 Offline mode — results are NOT sent to your teacher":net==="ok"?"🟢 Connected":net==="checking"?"⏳ Connecting…":"🔴 Cannot reach the server — check your internet";
+// ----- server calls -----
+async function api(d,ms){
+ if(!CFG.API)return{ok:true,local:true};
+ await ipP;
+ try{
+  const r=await tmo(fetch(CFG.API,{method:"POST",body:JSON.stringify({name:st.name,dev:st.dev,ip:IP,ua:navigator.userAgent.slice(0,90),...d})}).then(x=>x.text()),ms||15000);
+  const j=jp(r,null);if(!j){net="bad";return null}
+  net="ok";return j}
+ catch(e){net="down";return null}}
+const getQ=()=>jp(ls.g("zqq"),[]),setQ=q=>ls.s("zqq",JSON.stringify(q));
+async function send(d){d.eid=rid();d.name=st.name;d.dev=st.dev;const r=await api(d);if(CFG.API&&!(r&&r.ok)){const q=getQ();q.push(d);setQ(q)}return r}
+async function flush(){if(!CFG.API)return;const q=getQ();if(!q.length)return;const rest=[];for(const d of q){const r=await api(d);if(!(r&&r.ok))rest.push(d)}setQ(rest)}
+async function sync(){const s=await api({event:"status"});
+ if(s&&s.ok&&!s.local){st.attempts=s.attempts;st.best=s.best;st.viol=s.cheats;st.locked=s.attempts>=MAX;if(s.last)ls.s("zl4",s.last);save()}}
+// ----- screens -----
 function home(){
  const done=st.locked||st.attempts>=MAX,L=lastR();
- const nameBox=CFG.ROSTER.length?`<select id="nm" style="width:100%;padding:12px;border-radius:10px"><option value="">— apna naam chuno —</option>${CFG.ROSTER.map(n=>`<option>${esc(n)}</option>`).join("")}</select>`:'<input id="nm" placeholder="Poora naam">';
- app.innerHTML=msg+(st.name?`<div class="c"><b>Welcome back, ${esc(st.name)}! 👋</b><p class="tiny">Attempts: ${st.attempts}/${MAX}${st.best!=null?" · Best: "+st.best+"/20":""}</p>${done?'<p class="bad">Attempts khatam.</p>':'<button class="p" id="go">Test shuru karo (10 MCQ + calculator code)</button>'}${L?'<button id="rp">Pichla result + galtiyan dekho</button>':""}</div>`
- :`<div class="c"><p>Apna naam chuno/likho (sirf ek baar):</p>${nameBox}<button class="p" id="go">Save & Continue</button></div>`)
- +'<p class="tiny">⚠️ Test ke dauran screen/app/tab se bahar gaye ya reload kiya = attempt cancel. Code sirf type karna hai, paste nahi chalega. Aapka IP/device record hota hai.</p>';
- msg="";
- const g=$("go");if(g)g.onclick=async()=>{g.disabled=true;g.textContent="Loading…";
-  if(!st.name){const n=$("nm").value.trim().replace(/\s+/g," ");if(n.length<2){g.disabled=false;g.textContent="Save & Continue";return alert("Naam likho")}st.name=n;save();await sync();home()}else start()};
- const r=$("rp");if(r)r.onclick=()=>report(L)}
-async function start(){
- if(CFG.API===""&&st.attempts>=MAX)return home();
- const r=await api({event:"start"});
- if(r===null){msg='<div class="c bad">Internet/server ka masla. Dobara try karo (attempt use nahi hua).</div>';return home()}
- if(!r.ok){st.attempts=r.attempts;st.locked=true;save();msg='<div class="c bad">Attempts khatam.</div>';return home()}
- st.attempts=r.local?st.attempts+1:r.attempts;st.active=true;save();
- const qs=Q.map(q=>({q:q[0],r:q[1],o:q.slice(1).map((t,i)=>[t,i===0]).sort(()=>Math.random()-.5)})).sort(()=>Math.random()-.5).slice(0,NQ);
- cur={qs,i:0,sc:0,wrong:[],on:true};showQ()}
-const bar=p=>`<div class="bar"><i style="width:${p}%"></i></div>`;
-function showQ(){const x=cur.qs[cur.i];
- app.innerHTML=`<div class="c">${bar(cur.i/NQ*100)}<p class="tiny">Part A · Sawal ${cur.i+1}/${NQ} · Attempt ${st.attempts}/${MAX}</p><p id="qt" style="white-space:pre-wrap"></p>${x.o.map((o,k)=>`<button data-k="${k}"></button>`).join("")}</div>`;
- requestAnimationFrame(()=>{const i=document.querySelector(".bar i");if(i)i.style.width=((cur.i+1)/NQ*100)+"%"});
- $("qt").textContent=x.q;
- app.querySelectorAll("button").forEach(b=>{const o=x.o[b.dataset.k];b.textContent=o[0];b.onclick=()=>{if(o[1])cur.sc++;else cur.wrong.push({q:x.q,you:o[0],right:x.r});cur.i++;cur.i>=NQ?showCode():showQ()}})}
-function showCode(){
- app.innerHTML=`<div class="c">${bar(100)}<p class="tiny">Part B · Calculator (10 marks)</p><p><b>calculator
+ const nameBox=CFG.ROSTER.length?`<select id="nm"><option value="">— Select your name —</option>${CFG.ROSTER.map(n=>`<option>${esc(n)}</option>`).join("")}</select>`:'<input id="nm" placeholder="Your full name" autocomplete="name">';
+ const rules=`<div class="c"><b>Rules</b><ul class="tiny"><li>${NQ} multiple-choice questions + 1 Python calculator task (20 marks total).</li><li>You get ${MAX} attempts. Each attempt uses new random questions.</li>${CFG.TIME_LIMIT_MIN?`<li>Time limit: ${CFG.TIME_LIMIT_MIN} minutes per attempt.</li>`:""}<li>If you leave this screen, switch apps or reload during a test, that attempt is cancelled.</li><li>Code must be typed. Paste, copy and drag-drop are blocked.</li><li>Your IP address and device are recorded.</li></ul></div>`;
+ app.innerHTML=msg+(st.name?`<div class="c"><b>Welcome back, ${esc(st.name)}! 👋</b><p class="tiny">Attempts used: ${st.attempts}/${MAX}${st.best!=null?" · Best score: "+st.
